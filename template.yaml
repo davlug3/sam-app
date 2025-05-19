@@ -10,13 +10,17 @@ Globals:
   Function:
     Timeout: 3
 
+Conditions:
+  IsProduction: !Equals [!Ref "AWS::StackName", "sam-app-prod"]
+
 Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       AutoPublishAlias: live
       DeploymentPreference:
-        Type: Canary10Percent5Minutes
+        Type: !If [IsProduction, "Canary10Percent5Minutes", "AllAtOnce"]
+        Alarms: !If [IsProduction, [!Ref CanaryErrorsAlarm], []]
       CodeUri: hello-world/
       Handler: app.lambdaHandler
       Runtime: nodejs22.x
@@ -28,6 +32,25 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+
+  CanaryErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Lambda Function Canary Errors
+      CamparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 2
+      MetricName: Errors
+      Namespace: AWS/Lmabda
+      Period: 60
+      Statistic: Sum
+      Threshold: 0
+      Dimensions:
+        - Name: Resource
+          Value: !Sub "${HelloWorldFunction}:live"
+        - Name: FunctionName
+          Value: !Ref HelloWorldFunction
+        - Name: ExecutedVersion
+          Value: !GetAtt HelloWorldFunction.Version.Version 
 
 
 Outputs:
