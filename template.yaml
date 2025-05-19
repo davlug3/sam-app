@@ -14,6 +14,9 @@ Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
+      AutoPublishAlias: live
+      DeploymentPreference:
+        Type: Canary10Percent5Minutes
       CodeUri: hello-world/
       Handler: app.lambdaHandler
       Runtime: nodejs22.x
@@ -25,6 +28,7 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
