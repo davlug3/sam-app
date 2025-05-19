@@ -15,8 +15,8 @@ let response;
  * 
  */
 exports.lambdaHandler = async (event, context) => {
-    throw new Error("This will cause a deployment rollback")
     try {
+        console.log("Change deployed with SAM Accelerate")
         // const ret = await axios(url);
         response = {
             'statusCode': 200,
